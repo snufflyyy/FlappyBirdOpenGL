@@ -13,7 +13,11 @@
 unsigned int VAO, VBO, EBO;
 mat4 projection;
 
-static double previousTime;
+int framerate;
+float deltaTime;
+
+static float previousTimeFPS;
+static float previousTimeDeltaTime;
 static int frameCount;
 
 void initRenderer() {
@@ -26,24 +30,40 @@ void initRenderer() {
 	// create element buffer object
 	glGenBuffers(1, &EBO);
 
+    // bind the vertices and the indices
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
 	// init projection
 	glm_mat4_identity(projection);
 	glm_ortho(0, windowWidth, 0, windowHeight, -1, 1, projection);
 
-	previousTime = glfwGetTime();
+    // used for frame rate
+	previousTimeFPS = (float) glfwGetTime();
 	frameCount = 0;
 }
 
 void beginRendering() {
-	glBindVertexArray(VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    // fps and delta time calculation
+    float currentTime = (float) glfwGetTime();
+    frameCount++;
 
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    deltaTime = currentTime - previousTimeDeltaTime;
+    previousTimeDeltaTime = currentTime;
 
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
+    if (currentTime - previousTimeFPS >= 1.0) {
+        framerate = frameCount;
+
+        frameCount = 0;
+        previousTimeFPS = currentTime;
+    }
 }
 
 void clearBackground(float r, float g, float b) {
@@ -52,15 +72,7 @@ void clearBackground(float r, float g, float b) {
 }
 
 void printFPS() {
-	double currentTime = glfwGetTime();
-	frameCount++;
-
-	if (currentTime - previousTime >= 1.0) {
-		printf("fps: %d\n", frameCount);
-
-		frameCount = 0;
-		previousTime = currentTime;
-	}
+    printf("%d\n", framerate);
 }
 
 void endRendering() {

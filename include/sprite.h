@@ -19,5 +19,5 @@ typedef struct {
 	Texture texture;
 } Sprite;
 
-Sprite createSprite(vec2 position, vec2 scale, Shader shader, Texture texture);
+Sprite createSprite(Shader shader, Texture texture ,vec2 position, vec2 scale);
 void renderSprite(Sprite sprite);

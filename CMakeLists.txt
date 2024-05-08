@@ -31,6 +31,8 @@ add_executable (
 	src/shader.c
 	src/texture.c
 	src/sprite.c
+	src/bird.c
+	src/pipe.c
 
 	external/glad/src/glad.c
 )

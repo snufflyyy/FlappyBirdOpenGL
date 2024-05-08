@@ -22,19 +22,19 @@ const unsigned int indices[6] = {
     1, 2, 3    // second triangle
 };  
 
-Sprite createSprite(vec2 position, vec2 scale, Shader shader, Texture texture) {
+Sprite createSprite(Shader shader, Texture texture ,vec2 position, vec2 scale) {
 	Sprite sprite = {0};
 
-	// set position
-	sprite.position[0] = position[0];
-	sprite.position[1] = position[1];
+    sprite.shader = shader;
+    sprite.texture = texture;
 
 	// set scale
 	sprite.scale[0] = scale[0];
 	sprite.scale[1] = scale[1];
 
-	sprite.shader = shader;
-	sprite.texture = texture;
+    // set position
+    sprite.position[0] = position[0];
+    sprite.position[1] = position[1];
 
 	// init transform matrix
 	glm_mat4_identity(sprite.transform);

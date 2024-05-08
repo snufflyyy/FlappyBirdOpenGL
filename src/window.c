@@ -48,7 +48,7 @@ void createWindow(int width, int height, const char *title) {
 	// set window as current context
 	glfwMakeContextCurrent(window);
 
-	glfwSwapInterval(1);
+	glfwSwapInterval(0);
 
 	// load glad
 	if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
