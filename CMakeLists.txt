@@ -31,6 +31,7 @@ add_executable (
 	src/shader.c
 	src/texture.c
 	src/sprite.c
+	src/game.c
 	src/bird.c
 	src/pipe.c
 

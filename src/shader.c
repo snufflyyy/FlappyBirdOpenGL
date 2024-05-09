@@ -63,7 +63,6 @@ Shader createShader(const char* vertexSourcePath, const char* fragmentSourcePath
     // clean up
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
-
     free(vertexSource);
     free(fragmentSource);
 

@@ -7,9 +7,6 @@
 #include "shader.h"
 #include "texture.h"
 
-extern const float vertices[16];
-extern const unsigned int indices[6];
-
 typedef struct {
 	vec2 position;
 	vec2 scale;
@@ -24,3 +21,4 @@ typedef struct {
 Sprite createSprite(Shader shader, Texture texture);
 bool getCollision(Sprite *spriteOne, Sprite *spriteTwo);
 void renderSprite(Sprite sprite);
+void deleteSprite(Sprite *sprite);

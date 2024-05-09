@@ -48,3 +48,7 @@ void useTexture(Texture texture) {
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture.id);
 }
+
+void deleteTexture(Texture *texture) {
+	glDeleteTextures(1, &texture->id);
+}

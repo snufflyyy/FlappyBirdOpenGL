@@ -1,6 +1,7 @@
 #include "bird.h"
 
 #include <GLFW/glfw3.h>
+#include <stdbool.h>
 
 #include "render.h"
 #include "window.h"
@@ -45,10 +46,10 @@ void updateBird(Bird* bird, const vec2 gravity) {
     bird->sprite.position[1] += bird->velocity[1] * deltaTime;
 
     // bird rotation
-    if (bird->velocity[1] > 0 && bird->velocity[1] < 500) {
+    if (bird->velocity[1] > 0 && bird->velocity[1] < 700) {
         bird->sprite.rotation = bird->velocity[1] / 20;
     }
-    if (bird->velocity[1] < 0 && bird->velocity[1] > -1500) {
+    if (bird->velocity[1] < 0) {
         bird->sprite.rotation = bird->velocity[1] / 20;
     }
 }
@@ -66,8 +67,15 @@ void animateBird(Bird* bird) {
     }
 }
 
+// temp
+bool lastKeyState = false;
 void birdInput(Bird* bird) {
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-        bird->velocity[1] = 400;
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !lastKeyState) {
+        bird->velocity[1] = 600;
+        lastKeyState = true;
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
+        lastKeyState = false;
     }
 }

@@ -9,3 +9,4 @@ typedef struct {
 
 Texture createTexture(const char* filePath);
 void useTexture(Texture texture);
+void deleteTexture(Texture *texture);
