@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdbool.h>
+
 #include <cglm/types.h>
 
 #include "shader.h"
@@ -19,5 +21,6 @@ typedef struct {
 	Texture texture;
 } Sprite;
 
-Sprite createSprite(Shader shader, Texture texture ,vec2 position, vec2 scale);
+Sprite createSprite(Shader shader, Texture texture);
+bool getCollision(Sprite *spriteOne, Sprite *spriteTwo);
 void renderSprite(Sprite sprite);

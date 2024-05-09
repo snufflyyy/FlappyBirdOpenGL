@@ -11,104 +11,168 @@
 #include "shader.h"
 #include "render.h"
 #include "bird.h"
+#include "pipe.h"
+
+#define NUMBEROFPIPES 3
+
+typedef enum {
+    MAINMENU,
+    GAMEPLAY,
+    GAMEOVER
+} GameState;
+
+// game state / related stuff
+GameState gameState = MAINMENU;
+int score;
 
 int main() {
 	createWindow(432, 768, "Flappy Bird");
 	initRenderer();
-
     srand(time(NULL));
 
-	float backgroundScroll = 0;
-    float scrollSpeed = 200;
+    float scrollSpeed = 175;
 
     vec2 gravity = {0.0f, 1500.0f};
 
     // background
     Sprite background = createSprite (
         createShader("../assets/shaders/default.vert", "../assets/shaders/scrolling.frag"), 
-        createTexture("../assets/textures/backgrounds/night.png"),
-        (vec2) {0, 0},
-        (vec2) {0, 0}
+        createTexture("../assets/textures/backgrounds/night.png")
     );
-
-    background.scale[0] = ((float) background.texture.width / (float) background.texture.height) * windowHeight;
-    background.scale[1] = windowHeight;
-
+    background.scale[0] = ((float) background.texture.width / (float) background.texture.height) * (float) windowHeight;
+    background.scale[1] = (float) windowHeight;
     background.position[0] = background.scale[0] - background.scale[0] / 2;
     background.position[1] = (float) windowHeight / 2;
+    float backgroundScroll = 0;
 
-    // grounds
-    Sprite grounds[2] = {0};
-
-    for (int i = 0; i < 2; i++) {
-        grounds[i] = createSprite (
-            createShader("../assets/shaders/default.vert", "../assets/shaders/bird.frag"),
-            createTexture("../assets/textures/ground.png"),
-            (vec2) {0, 0},
-            (vec2) {0,0}
-        );
-
-        grounds[i].scale[0] = windowWidth;
-        grounds[i].scale[1] = ((float) grounds[i].texture.height / (float) grounds[i].texture.width) * windowWidth;
-    }
-
-    // ground one
-    grounds[0].position[0] = (float) windowWidth / 2;
-    grounds[0].position[1] = grounds[0].scale[1] / 2;
-
-    // ground two
-    grounds[1].position[0] = (float) windowWidth / 2 + windowWidth;
-    grounds[1].position[1] = grounds[1].scale[1] / 2;
-
-
-    Sprite pipe = createSprite (
+    // main menu graphic
+    Sprite mainMenu = createSprite (
         createShader("../assets/shaders/default.vert", "../assets/shaders/bird.frag"),
-        createTexture("../assets/textures/pipe.png"),
-        (vec2) {(float) windowWidth / 2, (float) windowWidth / 2},
-        (vec2) {(float) 52 * 2, (float) 320 * 2}
+        createTexture("../assets/textures/title.png")
     );
 
-    Bird bird = createBird((vec2) {(float) windowWidth / 2 - 100, (float) windowHeight / 2});
+    mainMenu.scale[0] = (float) mainMenu.texture.width * 2;
+    mainMenu.scale[1] = (float) mainMenu.texture.height * 2;
+    mainMenu.position[0] = (float) windowWidth / 2;
+    mainMenu.position[1] = (float) windowHeight - mainMenu.scale[1] * 2;
+
+    // number textures
+    Texture numberZero = createTexture("../assets/textures/numbers/0.png");
+    Texture numberOne = createTexture("../assets/textures/numbers/1.png");
+    Texture numberTwo = createTexture("../assets/textures/numbers/2.png");
+    Texture numberThree = createTexture("../assets/textures/numbers/3.png");
+    Texture numberFour = createTexture("../assets/textures/numbers/4.png");
+    Texture numberFive = createTexture("../assets/textures/numbers/5.png");
+    Texture numberSix = createTexture("../assets/textures/numbers/6.png");
+    Texture numberSeven = createTexture("../assets/textures/numbers/7.png");
+    Texture numberEight = createTexture("../assets/textures/numbers/8.png");
+    Texture numberNine = createTexture("../assets/textures/numbers/9.png");
+
+    // score counter
+    Sprite scoreCounter[3] = {0};
+
+    for (int i = 0; i < 3; i++) {
+        scoreCounter[i] = createSprite (
+            createShader("../assets/shaders/default.vert", "../assets/shaders/bird.frag"),
+            numberZero
+        );
+
+        scoreCounter[i].scale[0] = scoreCounter[i].texture.width * 1.5f;
+        scoreCounter[i].scale[1] = scoreCounter[i].texture.height * 1.5f;
+        scoreCounter[i].position[0] = (windowWidth / 2) + (i - 1) * scoreCounter[i].scale[0];
+        scoreCounter[i].position[1] = windowHeight / 2 + 250;
+    }
+
+    // pipes
+    Pipe pipes[3] = {0};
+    int lastSpawnedPipeIndex = 2;
+
+    Bird bird = createBird((vec2) {(float) windowWidth / 2, (float) windowHeight / 2});
 
 	while (!glfwWindowShouldClose(window)) {
-		backgroundScroll += 0.035f * deltaTime;
+        // update
 
-        // ground scrolling
-        for (int i = 0; i < 2; i++) {
-            grounds[i].position[0] -= scrollSpeed * deltaTime;
+        // how fast the background moves
+        if (gameState != GAMEOVER) {
+            backgroundScroll += 0.035f * deltaTime;
+            animateBird(&bird);
         }
-        for (int i = 0; i < 2; i++) {
-            if (grounds[i].position[0] < (float) -windowWidth / 2) {
-                grounds[i].position[0] = (float) windowWidth / 2 + windowWidth;
+
+        if (gameState != GAMEPLAY) {
+            if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+                // spawn pipes
+                for (int i = 0; i < NUMBEROFPIPES; i++) {
+                    pipes[i] = createPipe (
+                        (vec2) {
+                            (float) ((float) windowWidth + (float) pipes[i].width / 2) + (float) (i * 300),
+                            rand() % ((windowHeight - 250 + 1) - 250) + 250
+                        },
+                        250.0f
+                    );
+                }
+
+                // set bird position
+                bird.sprite.position[0] = (float) windowWidth / 2 - 100;
+
+                gameState = GAMEPLAY;
             }
         }
 
-        pipe.position[0] -= scrollSpeed * deltaTime;
-
-        if (pipe.position[0] < -100) {
-            pipe.position[0] = windowWidth + 100;
+        if (gameState != MAINMENU) {
+            updateBird(&bird, gravity);
         }
 
-        birdInput(&bird);
-        updateBird(&bird, gravity);
+        if (gameState == GAMEPLAY) {
+            birdInput(&bird);
 
-        printFPS();
+            // update tiles
+            for (int i = 0; i < NUMBEROFPIPES; i++) {
+                // "spawn" new pipe if out of bounds
+                if (pipes[i].position[0] < -100) {
+                    pipes[i].position[0] = pipes[lastSpawnedPipeIndex].position[0] + 300;
+                    pipes[i].position[1] = rand() % ((windowHeight - 250 + 1) - 250) + 250;
 
+                    lastSpawnedPipeIndex = i;
+                }
+
+                // check if the bird touches the pipe
+                if (getCollision(&bird.sprite, &pipes[i].bottomPipe) || getCollision(&bird.sprite, &pipes[i].topPipe)) {
+                    gameState = GAMEOVER;
+
+                    bird.velocity[0] = -50;
+                    bird.velocity[1] = 200;
+                }
+
+                pipes[i].position[0] -= scrollSpeed * deltaTime;
+
+                updatePipe(&pipes[i]);
+            }
+        }
+
+        // render
 		beginRendering();
 			clearBackground(0.0f, 0.0f, 0.0f);
+
             renderSprite(background);
             glUniform1f(glGetUniformLocation(background.shader.id, "scrollSpeed"), backgroundScroll);
 
-            for (int i = 0; i < 2; i++) {
-                renderSprite(grounds[i]);
+            if (gameState == MAINMENU) {
+                renderSprite(mainMenu);
+            }
+
+            if (gameState != MAINMENU) {
+                for (int i = 0; i < NUMBEROFPIPES; i++) {
+                    renderPipe(pipes[i]);
+
+                    for (int i = 0; i < 3; i++) {
+                        if (score < 10) {
+                            renderSprite(scoreCounter[1]);
+                        }
+                    }
+                }
             }
 
             renderSprite(bird.sprite);
-
-            renderSprite(pipe);
-            for (int i = 0; i < 2; i++) {
-                renderSprite(grounds[i]);
-            }
 		endRendering();	
 	}
 	

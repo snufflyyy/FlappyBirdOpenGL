@@ -12,6 +12,9 @@ Bird createBird(const vec2 position) {
     bird.lastAnimationTime = (float) glfwGetTime();
     bird.currentFrameIndex = 0;
 
+    // i think having a texture pointer array would be better to hold the frames
+    // (texture) so there isn't any repeated textures like bird.textures[3]
+
     // create textures
     bird.textures[0] = createTexture("../assets/textures/bird/downflap.png");
     bird.textures[1] = createTexture("../assets/textures/bird/midflap.png");
@@ -20,10 +23,14 @@ Bird createBird(const vec2 position) {
 
     bird.sprite = createSprite (
         createShader("../assets/shaders/default.vert", "../assets/shaders/bird.frag"),
-        bird.textures[0],
-        (vec2) {position[0], position[1]},
-        (vec2) {68, 48}
+        bird.textures[0]
     );
+
+    bird.sprite.scale[0] = (float) bird.sprite.texture.width * 2;
+    bird.sprite.scale[1] = (float) bird.sprite.texture.height * 2;
+
+    bird.sprite.position[0] = position[0];
+    bird.sprite.position[1] = position[1];
 
     return bird;
 }
@@ -37,7 +44,16 @@ void updateBird(Bird* bird, const vec2 gravity) {
     bird->sprite.position[0] += bird->velocity[0] * deltaTime;
     bird->sprite.position[1] += bird->velocity[1] * deltaTime;
 
-    // bird animation
+    // bird rotation
+    if (bird->velocity[1] > 0 && bird->velocity[1] < 500) {
+        bird->sprite.rotation = bird->velocity[1] / 20;
+    }
+    if (bird->velocity[1] < 0 && bird->velocity[1] > -1500) {
+        bird->sprite.rotation = bird->velocity[1] / 20;
+    }
+}
+
+void animateBird(Bird* bird) {
     if (glfwGetTime() - bird->lastAnimationTime > bird->animationSpeed) {
         bird->currentFrameIndex++;
 
@@ -46,15 +62,7 @@ void updateBird(Bird* bird, const vec2 gravity) {
         }
 
         bird->sprite.texture = bird->textures[bird->currentFrameIndex];
-        bird->lastAnimationTime = glfwGetTime();
-    }
-
-    // bird rotation
-    if (bird->velocity[1] > 0 && bird->velocity[1] < 500) {
-        bird->sprite.rotation = bird->velocity[1] / 20;
-    }
-    if (bird->velocity[1] < 0 && bird->velocity[1] > -500) {
-        bird->sprite.rotation = bird->velocity[1] / 20;
+        bird->lastAnimationTime = (float) glfwGetTime();
     }
 }
 

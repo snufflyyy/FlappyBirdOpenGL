@@ -3,9 +3,7 @@
 #include <glad/glad.h>
 #include <cglm/cglm.h>
 
-#include "cglm/affine-post.h"
-#include "cglm/affine.h"
-#include "cglm/types.h"
+#include "window.h"
 #include "shader.h"
 #include "texture.h"
 #include "render.h"
@@ -22,19 +20,17 @@ const unsigned int indices[6] = {
     1, 2, 3    // second triangle
 };  
 
-Sprite createSprite(Shader shader, Texture texture ,vec2 position, vec2 scale) {
+Sprite createSprite(Shader shader, Texture texture) {
 	Sprite sprite = {0};
 
     sprite.shader = shader;
     sprite.texture = texture;
 
-	// set scale
-	sprite.scale[0] = scale[0];
-	sprite.scale[1] = scale[1];
+    sprite.scale[0] = 100;
+    sprite.scale[1] = 100;
 
-    // set position
-    sprite.position[0] = position[0];
-    sprite.position[1] = position[1];
+    sprite.position[0] = (float) windowWidth / 2;
+    sprite.position[1] = (float) windowHeight / 2;
 
 	// init transform matrix
 	glm_mat4_identity(sprite.transform);
@@ -47,13 +43,21 @@ Sprite createSprite(Shader shader, Texture texture ,vec2 position, vec2 scale) {
 	return sprite;
 }
 
+bool getCollision(Sprite *spriteOne, Sprite *spriteTwo) {
+    bool collisionX = spriteOne->position[0] - spriteOne->scale[0] / 2 + spriteOne->scale[0] >= spriteTwo->position[0] - spriteTwo->scale[0] / 2 &&
+                      spriteTwo->position[0] - spriteTwo->scale[0] / 2 + spriteTwo->scale[0] >= spriteOne->position[0] - spriteOne->scale[0] / 2;
+
+    bool collisionY = spriteOne->position[1] - spriteOne->scale[1] / 2 + spriteOne->scale[1] >= spriteTwo->position[1] - spriteTwo->scale[1] / 2 &&
+                      spriteTwo->position[1] - spriteTwo->scale[1] / 2 + spriteTwo->scale[1] >= spriteOne->position[1] - spriteOne->scale[1] / 2;
+
+    return collisionX && collisionY;
+}
+
 void renderSprite(Sprite sprite) {
 	// set rotation
 	glm_rotated(sprite.transform, glm_rad(sprite.rotation), (vec3) {0.0f, 0.0f, 1.0f});
-
 	// set position
 	glm_translated(sprite.transform, (vec3) {sprite.position[0], sprite.position[1], 0.0f});
-
 	// set scale
 	glm_scale(sprite.transform, (vec3) {sprite.scale[0], sprite.scale[1], 0.0f});
 

@@ -8,9 +8,13 @@ typedef struct {
     vec2 position;
     float openingSize;
 
+    int width;
+    int height;
+
     Sprite topPipe;
     Sprite bottomPipe;
 } Pipe;
 
-Pipe createPipe(vec2 position, float openingSize, Shader shader, Texture texture);
+Pipe createPipe(const vec2 position, float openingSize);
+void updatePipe(Pipe *pipe);
 void renderPipe(Pipe pipe);
