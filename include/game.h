@@ -1,9 +1,5 @@
 #pragma once
 
-typedef enum {
-    MAINMENU,
-    GAMEPLAY,
-    GAMEOVER
-} GameState;
-
 void initGame();
+void gameUpdate();
+void gameRender();
