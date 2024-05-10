@@ -7,14 +7,14 @@
 #include "window.h"
 
 // for this game i am only rendering quads so this is good!!
-const float vertices[16] = {
+const float vertices[] = {
 	// position			   // texture coords	
      0.5f,  0.5f,  1.0f, 1.0f,  // top right
      0.5f, -0.5f,  1.0f, 0.0f,  // bottom right
     -0.5f, -0.5f, 0.0f, 0.0f, // bottom left
    -0.5f, 0.5f, 0.0f, 1.0f  // top left 
 };
-const unsigned int indices[6] = {
+const unsigned int indices[] = {
     0, 1, 3,   // first triangle
     1, 2, 3    // second triangle
 };  

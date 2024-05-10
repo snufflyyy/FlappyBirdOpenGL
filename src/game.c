@@ -6,6 +6,7 @@
 #include <glad/glad.h>
 #include <cglm/cglm.h>
 
+#include "GLFW/glfw3.h"
 #include "sprite.h"
 #include "window.h"
 #include "render.h"
@@ -73,6 +74,10 @@ void gameUpdate() {
             updateBackground();
             animateBird(&bird);
 
+			if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+				gameState = GAMEPLAY;
+			}
+
             break;
         case GAMEPLAY:
             updateBackground();
@@ -85,6 +90,10 @@ void gameUpdate() {
             break;
         case GAMEOVER:
             updateBird(&bird, gravity);
+
+			if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+				gameState = GAMEPLAY;
+			}
             break;
     }
 }
@@ -94,18 +103,24 @@ void gameRender() {
         case MAINMENU:
             renderSprite(background);
             glUniform1f(glGetUniformLocation(background.shader.id, "scrollSpeed"), backgroundScroll);
-            //renderSprite(bird.sprite);
-            renderSprite(mainMenuTitle);
-
+            renderSprite(bird.sprite);
+			renderSprite(mainMenuTitle);
             break;
         case GAMEPLAY:
             renderSprite(background);
             glUniform1f(glGetUniformLocation(background.shader.id, "scrollSpeed"), backgroundScroll);
-
+            
             renderPipes();
 
+			renderSprite(bird.sprite);
             break;
         case GAMEOVER:
+		    renderSprite(background);
+            glUniform1f(glGetUniformLocation(background.shader.id, "scrollSpeed"), backgroundScroll);
+            
+			renderPipes();
+
+			renderSprite(bird.sprite);
             break;
     }
 }
@@ -128,20 +143,20 @@ static void updateBackground() {
 
 static void initMainMenuTitle() {
 	// main menu graphic
-    Sprite mainMenu = createSprite (
+    mainMenuTitle = createSprite (
         createShader("../assets/shaders/default.vert", "../assets/shaders/default.frag"),
         createTexture("../assets/textures/title.png")
     );
 
-    mainMenu.scale[0] = (float) mainMenu.texture.width * 2;
-    mainMenu.scale[1] = (float) mainMenu.texture.height * 2;
-    mainMenu.position[0] = (float) windowWidth / 2;
-    mainMenu.position[1] = (float) windowHeight - mainMenu.scale[1] * 2;
+    mainMenuTitle.scale[0] = (float) mainMenuTitle.texture.width * 2;
+    mainMenuTitle.scale[1] = (float) mainMenuTitle.texture.height * 2;
+    mainMenuTitle.position[0] = (float) windowWidth / 2;
+    mainMenuTitle.position[1] = (float) windowHeight - mainMenuTitle.scale[1] * 2;
 }
 
 static void initBird() {
 	// beginning position (main menu)
-	createBird((vec2) {(float) windowWidth / 2, (float) windowHeight / 2});
+	bird = createBird((vec2) {(float) windowWidth / 2, (float) windowHeight / 2});
 }
 
 static void initPipes() {

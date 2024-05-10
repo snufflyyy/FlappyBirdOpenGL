@@ -23,7 +23,7 @@ Bird createBird(const vec2 position) {
     bird.textures[3] = bird.textures[1];
 
     bird.sprite = createSprite (
-        createShader("../assets/shaders/default.vert", "../assets/shaders/scrolling.frag"),
+        createShader("../assets/shaders/default.vert", "../assets/shaders/default.frag"),
         bird.textures[0]
     );
 

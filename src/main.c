@@ -1,12 +1,9 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "sprite.h"
-#include "texture.h"
 #include "window.h"
-#include "shader.h"
 #include "render.h"
-#include <game.h>
+#include "game.h"
 
 int main() {
 	createWindow(432, 768, "Flappy Bird");
