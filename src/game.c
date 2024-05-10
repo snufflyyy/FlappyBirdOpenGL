@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 
 #include <glad/glad.h>
 #include <stdio.h>
@@ -35,6 +36,9 @@ float scrollSpeed = 175;
 // world gravity
 vec2 gravity = {0.0f, 2000.0f};
 
+// default shader
+Shader defaultShader = {0};
+
 // sprites
 Sprite background = {0};
 float backgroundScroll;
@@ -49,6 +53,12 @@ Bird bird = {0};
 Pipe pipes[NUMBEROFPIPES] = {0};
 int lastSpawnedPipeIndex;
 
+// score counter
+Sprite scoreCounters[3] = {0};
+
+// number textures
+Texture numbers[10];
+
 static void initBackground();
 static void updateBackground();
 static void initMainMenuTitle();
@@ -59,8 +69,11 @@ static void initPipes();
 static void resetPipes();
 static void updatePipes();
 static void renderPipes();
+static void initScoreCounters();
+static void updateScoreCounters();
+static void renderScoreCounters();
 
-static bool getMainKeyInput() {
+static void getMainKeyInput() {
     if (lastPressState) {
         mainKeyJustPressed = false;
     }
@@ -82,19 +95,27 @@ void initGame() {
 	// set game state to main menu on launch
 	gameState = MAINMENU;
 
+    // create default shader
+    defaultShader = createShader("../assets/shaders/default.vert", "../assets/shaders/default.frag");
+
+    // load textures
+    for (int i = 0; i < 10; i++) {
+        char file[10];
+        sprintf(file, "%d", i);
+        char path[100] = "../assets/textures/numbers/";
+        strcat(path, file);
+        strcat(path, ".png");
+        numbers[i] = createTexture(path);
+    }
+
 	// init sprites
 	initBackground();
 	initMainMenuTitle();
+    initScoreCounters();
     initGameOverText();
 
 	initBird();
 	initPipes();
-}
-
-static void resetGame() {
-    resetPipes();
-
-    resetBird();
 }
 
 void gameUpdate() {
@@ -114,14 +135,18 @@ void gameUpdate() {
                 birdJump(&bird, 600.0f);
             }
             updateBackground();
+            updatePipes();
+            updateScoreCounters();
             updateBird(&bird, gravity);
             animateBird(&bird);
-
-            updatePipes();
             break;
         case GAMEOVER:
             if (mainKeyJustPressed) {
-                resetGame();
+                resetPipes();
+                resetBird();
+
+                score = 0;
+
                 gameState = GAMEPLAY;
             }
 
@@ -142,6 +167,7 @@ void gameRender() {
         case GAMEPLAY:
             renderPipes();
 			renderSprite(bird.sprite);
+            renderScoreCounters();
             break;
         case GAMEOVER:
 			renderPipes();
@@ -171,7 +197,7 @@ static void updateBackground() {
 static void initMainMenuTitle() {
 	// main menu graphic
     mainMenuTitle = createSprite (
-        createShader("../assets/shaders/default.vert", "../assets/shaders/default.frag"),
+        defaultShader,
         createTexture("../assets/textures/title.png")
     );
 
@@ -184,7 +210,7 @@ static void initMainMenuTitle() {
 static void initGameOverText() {
     // main menu graphic
     gameOverText = createSprite (
-        createShader("../assets/shaders/default.vert", "../assets/shaders/default.frag"),
+        defaultShader,
         createTexture("../assets/textures/gameover.png")
     );
 
@@ -195,7 +221,6 @@ static void initGameOverText() {
 }
 
 static void initBird() {
-	// beginning position (main menu)
 	bird = createBird((vec2) {(float) windowWidth / 2, (float) windowHeight / 2});
 }
 
@@ -204,13 +229,13 @@ static void resetBird() {
     bird.sprite.position[1] = (float) windowHeight / 2;
 
     bird.velocity[0] = 0;
-    bird.velocity[1] = 600;
+    bird.velocity[1] = 800;
 }
 
 static void initPipes() {
 	for (int i = 0; i < NUMBEROFPIPES; i++) {
         // position is set to this so it doesn't flash, this is a lazy solution but fuck it
-		pipes[i] = createPipe ((vec2) {(float) windowWidth * 2, (float) windowHeight * 2}, 250);
+		pipes[i] = createPipe ((vec2) {(float) windowWidth * 2, (float) windowHeight * 2}, 200);
 	}
 
     resetPipes();
@@ -264,5 +289,43 @@ static void updatePipes() {
 static void renderPipes() {
     for (int i = 0; i < NUMBEROFPIPES; i++) {
         renderPipe(pipes[i]);
+    }
+}
+
+static void initScoreCounters() {
+    for (int i = 0; i < 3; i++) {
+        scoreCounters[i] = createSprite(defaultShader, numbers[0]);
+
+        scoreCounters[i].scale[0] = (float) scoreCounters[i].texture.width * 1.5f;
+        scoreCounters[i].scale[1] = (float) scoreCounters[i].texture.height * 1.5f;
+
+        scoreCounters[i].position[0] = (float) windowWidth / 2;
+        scoreCounters[i].position[1] = (float) windowHeight - (float) scoreCounters[i].texture.height * 2;
+    }
+}
+
+static void updateScoreCounters() {
+    if (score < 10) {
+        scoreCounters[2].scale[0] = (float) scoreCounters[2].texture.width * 1.5f;
+        scoreCounters[2].scale[1] = (float) scoreCounters[2].texture.height * 1.5f;
+
+        scoreCounters[2].position[0] = (float) windowWidth / 2;
+        scoreCounters[2].position[1] = (float) windowHeight - (float) scoreCounters[2].texture.height * 2;
+
+        scoreCounters[2].texture = numbers[score];
+    }
+}
+
+static void renderScoreCounters() {
+    if (score < 10) {
+        renderSprite(scoreCounters[2]);
+    } else if (score < 100) {
+        scoreCounters[1].position[0] = (float) windowWidth / 2 - (float) scoreCounters[1].texture.width / 1.5f;
+        scoreCounters[2].position[0] = (float) windowWidth / 2 + (float) scoreCounters[2].texture.width / 1.5f;
+
+        renderSprite(scoreCounters[1]);
+        renderSprite(scoreCounters[2]);
+    } else {
+
     }
 }

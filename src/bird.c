@@ -75,7 +75,7 @@ void birdJump(Bird* bird, float jumpAmount) {
 bool lastKeyState = false;
 void birdInput(Bird* bird) {
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !lastKeyState) {
-        bird->velocity[1] = 600;
+        bird->velocity[1] = 800;
         lastKeyState = true;
     }
 
