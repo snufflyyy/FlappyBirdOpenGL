@@ -19,6 +19,6 @@ typedef struct {
 } Sprite;
 
 Sprite createSprite(Shader shader, Texture texture);
-bool getCollision(Sprite *spriteOne, Sprite *spriteTwo);
+bool getSpriteCollision(Sprite *spriteOne, Sprite *spriteTwo);
 void renderSprite(Sprite sprite);
 void deleteSprite(Sprite *sprite);

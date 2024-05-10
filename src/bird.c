@@ -67,6 +67,10 @@ void animateBird(Bird* bird) {
     }
 }
 
+void birdJump(Bird* bird, float jumpAmount) {
+    bird->velocity[1] = jumpAmount;
+}
+
 // temp
 bool lastKeyState = false;
 void birdInput(Bird* bird) {

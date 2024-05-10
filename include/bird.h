@@ -18,4 +18,4 @@ Bird createBird(const vec2 position);
 
 void updateBird(Bird* bird, const vec2 gravity);
 void animateBird(Bird* bird);
-void birdInput(Bird* bird);
+void birdJump(Bird* bird, float jumpAmount);

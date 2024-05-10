@@ -34,7 +34,7 @@ Sprite createSprite(Shader shader, Texture texture) {
 }
 
 // very basic aabb collision, thanks learnopengl.com! 
-bool getCollision(Sprite *spriteOne, Sprite *spriteTwo) {
+bool getSpriteCollision(Sprite *spriteOne, Sprite *spriteTwo) {
     bool collisionX = spriteOne->position[0] - spriteOne->scale[0] / 2 + spriteOne->scale[0] >= spriteTwo->position[0] - spriteTwo->scale[0] / 2 &&
                       spriteTwo->position[0] - spriteTwo->scale[0] / 2 + spriteTwo->scale[0] >= spriteOne->position[0] - spriteOne->scale[0] / 2;
 

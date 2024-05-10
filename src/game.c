@@ -4,7 +4,7 @@
 #include <time.h>
 
 #include <glad/glad.h>
-#include <cglm/cglm.h>
+#include <stdio.h>
 
 #include "GLFW/glfw3.h"
 #include "sprite.h"
@@ -14,6 +14,10 @@
 #include "bird.h"
 
 #define NUMBEROFPIPES 3
+
+// if the just key is pressed
+bool lastPressState;
+bool mainKeyJustPressed;
 
 typedef enum {
     MAINMENU,
@@ -29,14 +33,14 @@ int score;
 float scrollSpeed = 175;
 
 // world gravity
-vec2 gravity = {0.0f, 1500.0f};
+vec2 gravity = {0.0f, 2000.0f};
 
 // sprites
 Sprite background = {0};
 float backgroundScroll;
 
-// sprites cont.
 Sprite mainMenuTitle = {0};
+Sprite gameOverText = {0};
 
 // bird
 Bird bird = {0};
@@ -48,10 +52,28 @@ int lastSpawnedPipeIndex;
 static void initBackground();
 static void updateBackground();
 static void initMainMenuTitle();
+static void initGameOverText();
 static void initBird();
+static void resetBird();
 static void initPipes();
+static void resetPipes();
 static void updatePipes();
 static void renderPipes();
+
+static bool getMainKeyInput() {
+    if (lastPressState) {
+        mainKeyJustPressed = false;
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !lastPressState) {
+        mainKeyJustPressed = true;
+        lastPressState = true;
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
+        lastPressState = false;
+    }
+}
 
 void initGame() {
 	// set random seed
@@ -63,71 +85,76 @@ void initGame() {
 	// init sprites
 	initBackground();
 	initMainMenuTitle();
+    initGameOverText();
 
 	initBird();
 	initPipes();
 }
 
+static void resetGame() {
+    resetPipes();
+
+    resetBird();
+}
+
 void gameUpdate() {
+    getMainKeyInput();
+
     switch (gameState) {
         case MAINMENU:
+            if (mainKeyJustPressed) {
+                gameState = GAMEPLAY;
+            }
+
             updateBackground();
             animateBird(&bird);
-
-			if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-				gameState = GAMEPLAY;
-			}
-
             break;
         case GAMEPLAY:
+            if (mainKeyJustPressed) {
+                birdJump(&bird, 600.0f);
+            }
             updateBackground();
-            birdInput(&bird);
             updateBird(&bird, gravity);
             animateBird(&bird);
 
             updatePipes();
-
             break;
         case GAMEOVER:
-            updateBird(&bird, gravity);
+            if (mainKeyJustPressed) {
+                resetGame();
+                gameState = GAMEPLAY;
+            }
 
-			if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-				gameState = GAMEPLAY;
-			}
+            updateBird(&bird, gravity);
             break;
     }
 }
 
 void gameRender() {
+    renderSprite(background);
+    glUniform1f(glGetUniformLocation(background.shader.id, "scrollSpeed"), backgroundScroll);
+
     switch (gameState) {
         case MAINMENU:
-            renderSprite(background);
-            glUniform1f(glGetUniformLocation(background.shader.id, "scrollSpeed"), backgroundScroll);
             renderSprite(bird.sprite);
 			renderSprite(mainMenuTitle);
             break;
         case GAMEPLAY:
-            renderSprite(background);
-            glUniform1f(glGetUniformLocation(background.shader.id, "scrollSpeed"), backgroundScroll);
-            
             renderPipes();
-
 			renderSprite(bird.sprite);
             break;
         case GAMEOVER:
-		    renderSprite(background);
-            glUniform1f(glGetUniformLocation(background.shader.id, "scrollSpeed"), backgroundScroll);
-            
 			renderPipes();
-
 			renderSprite(bird.sprite);
+
+            renderSprite(gameOverText);
             break;
     }
 }
 
 static void initBackground() {
 	background = createSprite (
-        createShader("../assets/shaders/default.vert", "../assets/shaders/scrolling.frag"), 
+        createShader("../assets/shaders/default.vert", "../assets/shaders/scrolling.frag"),
         createTexture("../assets/textures/backgrounds/night.png")
     );
 
@@ -154,25 +181,52 @@ static void initMainMenuTitle() {
     mainMenuTitle.position[1] = (float) windowHeight - mainMenuTitle.scale[1] * 2;
 }
 
+static void initGameOverText() {
+    // main menu graphic
+    gameOverText = createSprite (
+        createShader("../assets/shaders/default.vert", "../assets/shaders/default.frag"),
+        createTexture("../assets/textures/gameover.png")
+    );
+
+    gameOverText.scale[0] = (float) gameOverText.texture.width * 2;
+    gameOverText.scale[1] = (float) gameOverText.texture.height * 2;
+    gameOverText.position[0] = (float) windowWidth / 2;
+    gameOverText.position[1] = (float) windowHeight - mainMenuTitle.scale[1] * 2;
+}
+
 static void initBird() {
 	// beginning position (main menu)
 	bird = createBird((vec2) {(float) windowWidth / 2, (float) windowHeight / 2});
 }
 
+static void resetBird() {
+    bird.sprite.position[0] = (float) windowWidth / 2;
+    bird.sprite.position[1] = (float) windowHeight / 2;
+
+    bird.velocity[0] = 0;
+    bird.velocity[1] = 600;
+}
+
 static void initPipes() {
 	for (int i = 0; i < NUMBEROFPIPES; i++) {
-		pipes[i] = createPipe (
-			(vec2) {
-				((float) windowWidth + (float) pipes[i].width / 2) + (i * 300), // 300 is spacing between pipes
-                // (windowHeight - pipe spacing top + 1 - pipe spacing bottom) + pipe spacing bottom
-				rand() % (int) (windowHeight - 250 + 1 - 300) + 300
-			},
-            // opening size
-			250
-		);
+        // position is set to this so it doesn't flash, this is a lazy solution but fuck it
+		pipes[i] = createPipe ((vec2) {(float) windowWidth * 2, (float) windowHeight * 2}, 250);
 	}
 
+    resetPipes();
+
 	lastSpawnedPipeIndex = NUMBEROFPIPES - 1;
+}
+
+static void resetPipes() {
+    for (int i = 0; i < NUMBEROFPIPES; i++) {
+        pipes[i].position[0] = ((float) windowWidth + (float) pipes[i].scale[0] / 2) + (float) (i * 300);
+        pipes[i].position[1] = rand() % (int) (windowHeight - 250 + 1 - 300) + 300;
+
+        pipes[i].passed = false;
+    }
+
+    lastSpawnedPipeIndex = NUMBEROFPIPES - 1;
 }
 
 static void updatePipes() {
@@ -182,15 +236,23 @@ static void updatePipes() {
             pipes[i].position[0] = pipes[lastSpawnedPipeIndex].position[0] + 300;
             pipes[i].position[1] = rand() % ((windowHeight - 250 + 1) - 250) + 250;
 
+            pipes[i].passed = false;
             lastSpawnedPipeIndex = i;
         }
 
         // check if the bird touches the pipe
-        if (getCollision(&bird.sprite, &pipes[i].bottomPipe) || getCollision(&bird.sprite, &pipes[i].topPipe)) {
+        if (getSpriteCollision(&bird.sprite, &pipes[i].bottomPipe) || getSpriteCollision(&bird.sprite, &pipes[i].topPipe)) {
             gameState = GAMEOVER;
 
-            bird.velocity[0] = -50;
+            bird.velocity[0] = -100;
             bird.velocity[1] = 200;
+        }
+
+        // check if the bird passes through
+        if (getSpriteTriggerCollision(&bird.sprite, &pipes[i].trigger) && !pipes[i].passed) {
+            pipes[i].passed = true;
+
+            score++;
         }
 
         pipes[i].position[0] -= scrollSpeed * deltaTime;
