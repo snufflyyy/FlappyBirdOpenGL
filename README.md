@@ -18,7 +18,7 @@
  - the people who made glfw - used for window creation, input, and opengl context! (https://github.com/glfw/glfw)
  - the people who made glad - used for opengl (https://github.com/Dav1dde/glad)
  - and the people who made cglm - used for opengl math (https://github.com/recp/cglm)
- - and finally, big thanks to the website learnopengl.com
+ - and finally, big thanks to the website [learnopengl.com](https://learnopengl.com/)
 
 ### good bye
  - it will 100% work on windows and linux but idk about macOS so... sorry?
