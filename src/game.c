@@ -131,6 +131,10 @@ void gameUpdate() {
             animateBird(&bird);
             break;
         case GAMEPLAY:
+            for (int i = 0; i < 3; i++) {
+                scoreCounters[i].position[1] = (float) windowHeight - (float) scoreCounters[i].texture.height * 4;
+            }
+
             if (mainKeyJustPressed) {
                 birdJump(&bird, 600.0f);
             }
@@ -141,12 +145,16 @@ void gameUpdate() {
             animateBird(&bird);
             break;
         case GAMEOVER:
+            for (int i = 0; i < 3; i++) {
+                scoreCounters[i].position[1] = (float) windowHeight - (float) scoreCounters[i].texture.height * 9;
+            }
+
             if (mainKeyJustPressed) {
                 resetPipes();
+                updatePipes(); // this fixes a bug DONT REMOVE IT later me!
                 resetBird();
 
                 score = 0;
-
                 gameState = GAMEPLAY;
             }
 
@@ -172,6 +180,7 @@ void gameRender() {
         case GAMEOVER:
 			renderPipes();
 			renderSprite(bird.sprite);
+            renderScoreCounters();
 
             renderSprite(gameOverText);
             break;
@@ -229,7 +238,7 @@ static void resetBird() {
     bird.sprite.position[1] = (float) windowHeight / 2;
 
     bird.velocity[0] = 0;
-    bird.velocity[1] = 800;
+    bird.velocity[1] = 0;
 }
 
 static void initPipes() {
@@ -300,32 +309,40 @@ static void initScoreCounters() {
         scoreCounters[i].scale[1] = (float) scoreCounters[i].texture.height * 1.5f;
 
         scoreCounters[i].position[0] = (float) windowWidth / 2;
-        scoreCounters[i].position[1] = (float) windowHeight - (float) scoreCounters[i].texture.height * 2;
+        scoreCounters[i].position[1] = (float) windowHeight - (float) scoreCounters[i].texture.height * 4;
     }
 }
 
 static void updateScoreCounters() {
-    if (score < 10) {
-        scoreCounters[2].scale[0] = (float) scoreCounters[2].texture.width * 1.5f;
-        scoreCounters[2].scale[1] = (float) scoreCounters[2].texture.height * 1.5f;
-
-        scoreCounters[2].position[0] = (float) windowWidth / 2;
-        scoreCounters[2].position[1] = (float) windowHeight - (float) scoreCounters[2].texture.height * 2;
-
-        scoreCounters[2].texture = numbers[score];
+    // this fixes the scale of the number because the number 1 image is a diff size
+    for (int i = 0; i < 3; i++) {
+        scoreCounters[i].scale[0] = (float) scoreCounters[i].texture.width * 1.5f;
+        scoreCounters[i].scale[1] = (float) scoreCounters[i].texture.height * 1.5f;
     }
+
+    scoreCounters[2].texture = numbers[score % 10]; // first digit
+    scoreCounters[1].texture = numbers[(score / 10) % 10]; // second digit
+    scoreCounters[0].texture = numbers[score / 100]; // third digit
 }
 
 static void renderScoreCounters() {
     if (score < 10) {
+        scoreCounters[2].position[0] = (float) windowWidth / 2;
+
         renderSprite(scoreCounters[2]);
     } else if (score < 100) {
-        scoreCounters[1].position[0] = (float) windowWidth / 2 - (float) scoreCounters[1].texture.width / 1.5f;
-        scoreCounters[2].position[0] = (float) windowWidth / 2 + (float) scoreCounters[2].texture.width / 1.5f;
+        scoreCounters[1].position[0] = (float) windowWidth / 2 - (float) scoreCounters[1].texture.width / 1.4f;
+        scoreCounters[2].position[0] = (float) windowWidth / 2 + (float) scoreCounters[2].texture.width / 1.4f;
 
         renderSprite(scoreCounters[1]);
         renderSprite(scoreCounters[2]);
-    } else {
+    } else if (score < 1000){
+        scoreCounters[0].position[0] = (float) windowWidth / 2 - (float) scoreCounters[0].texture.width - (float) scoreCounters[1].texture.width / 2;
+        scoreCounters[1].position[0] = (float) windowWidth / 2;
+        scoreCounters[2].position[0] = (float) windowWidth / 2 + (float) scoreCounters[2].texture.width + (float) scoreCounters[1].texture.width / 2;
 
+        renderSprite(scoreCounters[0]);
+        renderSprite(scoreCounters[1]);
+        renderSprite(scoreCounters[2]);
     }
 }
