@@ -12,7 +12,7 @@
  - STEP ONE: make sure you have cmake install on your computer
  - STEP TWO: git clone the repo and cd into it
  - STEP THREE: enter the command ```cmake build build```
- - STEP FOUR: play the great game by cd input the *new* build folder and run the binary!
+ - STEP FOUR: play the great game by cd in to the *new* build folder and run the binary!
 
 ### big boy thanks to...
  - the people who made glfw - used for window creation, input, and opengl context! (https://github.com/glfw/glfw)
