@@ -19,9 +19,9 @@ int main() {
 		beginRendering();
 			clearBackground(0.0f, 0.0f, 0.0f);
             gameRender();
-		endRendering();	
+		endRendering();
 	}
-	
+
 	// clean up
 	deinitRenderer();
 

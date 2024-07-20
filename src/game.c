@@ -121,6 +121,8 @@ void initGame() {
 void gameUpdate() {
     getMainKeyInput();
 
+    printf("%f\n", bird.sprite.position[1]);
+
     switch (gameState) {
         case MAINMENU:
             if (mainKeyJustPressed) {
@@ -138,6 +140,12 @@ void gameUpdate() {
             if (mainKeyJustPressed) {
                 birdJump(&bird, 600.0f);
             }
+
+            // game over if the bird is off screen
+            if (bird.sprite.position[1] < -50) {
+                gameState = GAMEOVER;
+            }
+
             updateBackground();
             updatePipes();
             updateScoreCounters();
@@ -158,7 +166,10 @@ void gameUpdate() {
                 gameState = GAMEPLAY;
             }
 
-            updateBird(&bird, gravity);
+            // stops the bird when its off screen
+            if (bird.sprite.position[1] > -50) {
+                updateBird(&bird, gravity);
+            }
             break;
     }
 }
