@@ -11,7 +11,7 @@
 ### how to build
  - STEP ONE: make sure you have cmake install on your computer
  - STEP TWO: git clone the repo and cd into it
- - STEP THREE: enter the command ```cmake build build```
+ - STEP THREE: enter the command ```cmake --build build```
  - STEP FOUR: play the great game by cd in to the *new* build folder and run the binary!
 
 ### big boy thanks to...
