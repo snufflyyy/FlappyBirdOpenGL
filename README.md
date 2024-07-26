@@ -1,4 +1,4 @@
-# Another Flappy Bird Clone
+# Another Flappy Bird Clone 🐥
 
 ### features
 - ZERO dependences!
