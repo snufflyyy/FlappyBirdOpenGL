@@ -10,7 +10,8 @@ typedef struct {
     float animationSpeed;
     float lastAnimationTime;
 
-    Texture textures[4];
+    Texture frames[3];
+    Texture* currentFrame;
     int currentFrameIndex;
 } Bird;
 

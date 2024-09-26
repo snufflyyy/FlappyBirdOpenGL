@@ -9,22 +9,21 @@
 Bird createBird(const vec2 position) {
     Bird bird = {0};
 
-    bird.animationSpeed = 0.075f;
+    bird.animationSpeed = 0.1f;
     bird.lastAnimationTime = (float) glfwGetTime();
     bird.currentFrameIndex = 0;
 
-    // i think having a texture pointer array would be better to hold the frames
-    // (texture) so there isn't any repeated textures like bird.textures[3]
-
     // create textures
-    bird.textures[0] = createTexture("../assets/textures/bird/downflap.png");
-    bird.textures[1] = createTexture("../assets/textures/bird/midflap.png");
-    bird.textures[2] = createTexture("../assets/textures/bird/upflap.png");
-    bird.textures[3] = bird.textures[1];
+    bird.frames[0] = createTexture("../assets/textures/bird/downflap.png");
+    bird.frames[1] = createTexture("../assets/textures/bird/midflap.png");
+    bird.frames[2] = createTexture("../assets/textures/bird/upflap.png");
+
+    // sets currentFrame to the first frame in the frames array
+    bird.currentFrame = &bird.frames[0];
 
     bird.sprite = createSprite (
         createShader("../assets/shaders/default.vert", "../assets/shaders/default.frag"),
-        bird.textures[0]
+        *bird.currentFrame
     );
 
     bird.sprite.scale[0] = (float) bird.sprite.texture.width * 2;
@@ -58,28 +57,17 @@ void animateBird(Bird* bird) {
     if (glfwGetTime() - bird->lastAnimationTime > bird->animationSpeed) {
         bird->currentFrameIndex++;
 
-        if (bird->currentFrameIndex > 3) {
+        if (bird->currentFrameIndex > 2) {
             bird->currentFrameIndex = 0;
         }
 
-        bird->sprite.texture = bird->textures[bird->currentFrameIndex];
+        bird->currentFrame = &bird->frames[bird->currentFrameIndex];
+
+        bird->sprite.texture = *bird->currentFrame;
         bird->lastAnimationTime = (float) glfwGetTime();
     }
 }
 
 void birdJump(Bird* bird, float jumpAmount) {
     bird->velocity[1] = jumpAmount;
-}
-
-// temp
-bool lastKeyState = false;
-void birdInput(Bird* bird) {
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !lastKeyState) {
-        bird->velocity[1] = 800;
-        lastKeyState = true;
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
-        lastKeyState = false;
-    }
 }

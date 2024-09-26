@@ -98,7 +98,7 @@ void initGame() {
     // create default shader
     defaultShader = createShader("../assets/shaders/default.vert", "../assets/shaders/default.frag");
 
-    // load textures
+    // load textures (this is retarded)
     for (int i = 0; i < 10; i++) {
         char file[10];
         sprintf(file, "%d", i);
@@ -121,8 +121,6 @@ void initGame() {
 void gameUpdate() {
     getMainKeyInput();
 
-    printf("%f\n", bird.sprite.position[1]);
-
     switch (gameState) {
         case MAINMENU:
             if (mainKeyJustPressed) {
@@ -142,7 +140,7 @@ void gameUpdate() {
             }
 
             // game over if the bird is off screen
-            if (bird.sprite.position[1] < -50) {
+            if (bird.sprite.position[1] < -50 || bird.sprite.position[1] > (float) windowHeight + 50) {
                 gameState = GAMEOVER;
             }
 
@@ -192,7 +190,6 @@ void gameRender() {
 			renderPipes();
 			renderSprite(bird.sprite);
             renderScoreCounters();
-
             renderSprite(gameOverText);
             break;
     }
