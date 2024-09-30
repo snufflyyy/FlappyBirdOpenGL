@@ -12,7 +12,7 @@ typedef struct {
 
     Texture frames[3];
     Texture* currentFrame;
-    int currentFrameIndex;
+    int frameTracker;
 } Bird;
 
 Bird createBird(const vec2 position);

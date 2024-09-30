@@ -14,7 +14,7 @@
 #include "pipe.h"
 #include "bird.h"
 
-#define NUMBEROFPIPES 3
+#define NUMBEROFPIPES 5
 
 // if the just key is pressed
 bool lastPressState;
@@ -40,8 +40,15 @@ vec2 gravity = {0.0f, 2000.0f};
 Shader defaultShader = {0};
 
 // sprites
-Sprite background = {0};
+Sprite *backgrounds;
+int numberOfBackgrounds;
+
 float backgroundScroll;
+
+Sprite *grounds;
+int numberOfGrounds;
+
+float groundScroll;
 
 Sprite mainMenuTitle = {0};
 Sprite gameOverText = {0};
@@ -98,7 +105,7 @@ void initGame() {
     // create default shader
     defaultShader = createShader("../assets/shaders/default.vert", "../assets/shaders/default.frag");
 
-    // load textures (this is retarded)
+    // load textures (this is retarded) and not memory safe?
     for (int i = 0; i < 10; i++) {
         char file[10];
         sprintf(file, "%d", i);
@@ -119,6 +126,13 @@ void initGame() {
 }
 
 void gameUpdate() {
+    if (justResized) {
+        initBackground();
+        initMainMenuTitle();
+        initScoreCounters();
+        initGameOverText();
+    }
+
     getMainKeyInput();
 
     switch (gameState) {
@@ -173,8 +187,10 @@ void gameUpdate() {
 }
 
 void gameRender() {
-    renderSprite(background);
-    glUniform1f(glGetUniformLocation(background.shader.id, "scrollSpeed"), backgroundScroll);
+    for (int i = 0 ; i < numberOfBackgrounds; i++) {
+        renderSprite(backgrounds[i]);
+        glUniform1f(glGetUniformLocation(backgrounds[i].shader.id, "scrollSpeed"), backgroundScroll);
+    }
 
     switch (gameState) {
         case MAINMENU:
@@ -196,19 +212,55 @@ void gameRender() {
 }
 
 static void initBackground() {
-	background = createSprite (
-        createShader("../assets/shaders/default.vert", "../assets/shaders/scrolling.frag"),
-        createTexture("../assets/textures/backgrounds/night.png")
-    );
+    const Texture backgroundTexture = createTexture("../assets/textures/backgrounds/night.png");
+    const float backgroundTextureScale = ((float) backgroundTexture.width / (float) backgroundTexture.height) * (float) windowHeight;
 
-	background.scale[0] = ((float) background.texture.width / (float) background.texture.height) * (float) windowHeight;
-    background.scale[1] = (float) windowHeight;
-    background.position[0] = background.scale[0] - background.scale[0] / 2;
-    background.position[1] = (float) windowHeight / 2;
+    numberOfBackgrounds = windowWidth / (int) backgroundTextureScale;
+
+    // i dont like this code below but it works so
+    int total = 0;
+    for (int i = 0; i < numberOfBackgrounds; i++) {
+        total += (int) backgroundTextureScale;
+    }
+
+    if (total < windowWidth) {
+        numberOfBackgrounds++;
+    }
+
+    if (numberOfBackgrounds == 0) {
+        numberOfBackgrounds = 1;
+    }
+
+    Sprite* backgroundTemp = realloc(backgrounds, sizeof(Sprite) * numberOfBackgrounds);
+    if (backgroundTemp == NULL) {
+        printf("could not allocate memory for backgrounds\n");
+        exit(-1);
+    }
+    backgrounds = backgroundTemp;
+
+    for (int i = 0; i < numberOfBackgrounds; i++) {
+        backgrounds[i] = createSprite(
+            createShader("../assets/shaders/default.vert", "../assets/shaders/scrolling.frag"),
+            backgroundTexture
+        );
+
+        backgrounds[i].scale[0] = backgroundTextureScale;
+        backgrounds[i].scale[1] = (float) windowHeight;
+        backgrounds[i].position[0] = ((float) i * backgrounds[i].scale[0]) + backgrounds[i].scale[0] / 2;
+        backgrounds[i].position[1] = (float) windowHeight / 2;
+    }
 }
 
 static void updateBackground() {
-    backgroundScroll += 0.035f * deltaTime;
+    backgroundScroll += 0.275f * deltaTime;
+}
+
+static void initGrounds() {
+
+}
+
+static void updateGrounds() {
+
 }
 
 static void initMainMenuTitle() {
@@ -225,7 +277,7 @@ static void initMainMenuTitle() {
 }
 
 static void initGameOverText() {
-    // main menu graphic
+    // game over graphic
     gameOverText = createSprite (
         defaultShader,
         createTexture("../assets/textures/gameover.png")
@@ -251,8 +303,7 @@ static void resetBird() {
 
 static void initPipes() {
 	for (int i = 0; i < NUMBEROFPIPES; i++) {
-        // position is set to this so it doesn't flash, this is a lazy solution but fuck it
-		pipes[i] = createPipe ((vec2) {(float) windowWidth * 2, (float) windowHeight * 2}, 200);
+		pipes[i] = createPipe((vec2) {0, 0}, 200);
 	}
 
     resetPipes();
@@ -274,7 +325,7 @@ static void resetPipes() {
 static void updatePipes() {
     for (int i = 0; i < NUMBEROFPIPES; i++) {
         // "spawn" new pipe if out of bounds
-        if (pipes[i].position[0] < -100) {
+        if (pipes[i].position[0] < -pipes[i].scale[0] / 2) {
             pipes[i].position[0] = pipes[lastSpawnedPipeIndex].position[0] + 300;
             pipes[i].position[1] = rand() % ((windowHeight - 250 + 1) - 250) + 250;
 

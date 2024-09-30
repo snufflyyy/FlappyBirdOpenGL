@@ -1,3 +1,5 @@
+#include <stdbool.h>
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -6,7 +8,7 @@
 #include "game.h"
 
 int main() {
-	createWindow(432, 768, "Flappy Bird");
+	createWindow(1280, 720, "Flappy Bird");
 	initRenderer();
 
     initGame();
@@ -14,6 +16,10 @@ int main() {
 	while (!glfwWindowShouldClose(window)) {
         // update
         gameUpdate();
+
+		if (justResized) {
+			justResized = false;
+		}
 
         // render
 		beginRendering();

@@ -11,7 +11,7 @@ Bird createBird(const vec2 position) {
 
     bird.animationSpeed = 0.1f;
     bird.lastAnimationTime = (float) glfwGetTime();
-    bird.currentFrameIndex = 0;
+    bird.frameTracker = 0;
 
     // create textures
     bird.frames[0] = createTexture("../assets/textures/bird/downflap.png");
@@ -55,13 +55,19 @@ void updateBird(Bird* bird, const vec2 gravity) {
 
 void animateBird(Bird* bird) {
     if (glfwGetTime() - bird->lastAnimationTime > bird->animationSpeed) {
-        bird->currentFrameIndex++;
+        bird->frameTracker++;
 
-        if (bird->currentFrameIndex > 2) {
-            bird->currentFrameIndex = 0;
+        if (bird->frameTracker > 3) {
+            bird->frameTracker = 0;
         }
 
-        bird->currentFrame = &bird->frames[bird->currentFrameIndex];
+        switch (bird->frameTracker) {
+            case 0: bird->currentFrame = &bird->frames[0]; break;
+            case 1: bird->currentFrame = &bird->frames[1]; break;
+            case 2: bird->currentFrame = &bird->frames[2]; break;
+            case 3: bird->currentFrame = &bird->frames[1]; break;
+            default: bird->currentFrame = &bird->frames[0]; break;
+        }
 
         bird->sprite.texture = *bird->currentFrame;
         bird->lastAnimationTime = (float) glfwGetTime();

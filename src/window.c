@@ -14,14 +14,16 @@ int windowHeight;
 
 GLFWwindow* window;
 
+bool justResized = false;
+
 void windowResizeCallback(GLFWwindow* window, int width, int height);
 
 void createWindow(int width, int height, const char *title) {
 	// init glfw
 	glfwInit();
 
-	// tell glfw that the window will NOT be resized
-	glfwWindowHint(GLFW_RESIZABLE, false);
+	// tell glfw that the window will be resized
+	glfwWindowHint(GLFW_RESIZABLE, true);
 
 	// tell glfw what opengl version and profile we are using
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -65,15 +67,17 @@ void createWindow(int width, int height, const char *title) {
 	glfwSetFramebufferSizeCallback(window, windowResizeCallback);
 }
 
-// gets called when window is resized (unused)
+// gets called when window is resized
 void windowResizeCallback(GLFWwindow* window, int width, int height) {
+	// set window width and height
+	windowWidth = width;
+	windowHeight = height;
+
 	// updates opengl viewport to new window size
 	glViewport(0, 0, windowWidth, windowHeight);
 
 	glm_mat4_identity(projection);
-	glm_ortho(0, windowWidth, 0, windowHeight, -1, 1, projection);
+	glm_ortho(0, (float) windowWidth, 0, (float) windowHeight, -1, 1, projection);
 
-	// set window width and height
-	windowWidth = width;
-	windowHeight = height;
+	justResized = true;
 }
